@@ -1,0 +1,5 @@
+<resources>
+
+    <string name="app_name">testLibTwo</string>
+	<string name="libtwo">这个字符串来自lib 2</string>
+</resources>

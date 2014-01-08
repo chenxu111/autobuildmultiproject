@@ -1,20 +1,28 @@
 <?xml version="1.0" encoding="gbk"?>
 <!-- Build an Android project. -->
 <project
-    name="testAutobuild"
-    default="10zipalign"
+    name="doudizhu"
+    default="deploy"
     basedir="." >
 
-    <!-- 通用属性 -->
+    <!-- 通锟斤拷锟斤拷锟斤拷 -->
+    <property file="local.properties" />
 
     <property file="build.properties" />
 
-    <!-- 项目属性 -->
+    <!-- 锟斤拷目锟斤拷锟斤拷 -->
 
     <property file="auto-build.properties" />
 
-    <!-- 工程相关配置 -->
+    <!-- 锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷锟� -->
 
+    <property
+        name = "sdk.home"
+        location = "/Users/chenxu/developer/android-sdk-macosx"/>
+	<property
+	    name = "libproject2.abs"
+	 	location="/Users/chenxu/work/c++/cocos2d-x-2.1.4/libgamebaison"
+	/>
     <property
         name="libproject.abs.res"
         location="${libproject.abs}\res" />
@@ -29,13 +37,13 @@
 
     <property
         name="libproject.package.name"
-        value="com.liubing.testLibOne" />
+        value="org.cocos2dx" />
 
-    <!-- lib2工程相关配置 -->
-
+    <!-- lib2锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷锟� -->
+	
     <property
         name="libproject2.package.name"
-        value="com.liubing.testlibtwo" />
+        value="com.nbgame.lib" />
 
     <property
         name="libproject2.abs.res"
@@ -119,6 +127,11 @@
     </property>
 
     <property
+        name="release.abs"
+        value="${mainproject.abs}/release" >
+    </property>
+
+    <property
         name="gen.abs"
         value="${mainproject.abs}/gen" >
     </property>
@@ -148,30 +161,70 @@
         value="${mainproject.abs}/bin/resources.ap_" >
     </property>
 
+     <property
+        name="externallib.abs"
+        value="${mainproject.abs}/libs" >
+    </property>
+
     <property
         name="unsigned.abs"
-        value="${bin.abs}/${ant.project.name}-unsigned.apk" >
+        value="${release.abs}/${ant.project.name}-unsigned.apk" >
     </property>
 
     <property
         name="signed.abs"
-        value="${bin.abs}/${ant.project.name}-signed.apk" >
+        value="${release.abs}/${ant.project.name}-signed.apk" >
     </property>
 
     <property
         name="keystore.path"
         location="${mainproject.abs}/${keystore.name}" />
 
+    <!-- import antcontrib -->
+    <!-- target -->
+    <taskdef resource="net/sf/antcontrib/antcontrib.properties" >
+        <classpath>
+            <pathelement location="/usr/share/ant/lib/ant-contrib-1.0b3.jar" />
+        </classpath>
+    </taskdef>
+
+    <target name="deploy">
+        <foreach
+            delimiter=","
+            list="${market_channels}"
+            param="channel"
+            target="modify_manifest" >
+        </foreach>
+    </target>
+
+    <target name="modify_manifest" >
+        <echo>${channel}</echo>
+        <!-- <replaceregexp file="AndroidManifest.xml" encoding="utf-8" match="android:value=&quot;(.*)&quot;" replace=""/> -->
+
+        <replaceregexp
+            byline="false"
+            flags="g" >
+            <regexp pattern="android:name=&quot;UMENG_CHANNEL&quot; android:value=&quot;(.*)&quot;" />
+            <substitution expression="android:name=&quot;UMENG_CHANNEL&quot; android:value=&quot;${channel}&quot;" />
+            <fileset
+                dir=""
+                includes="AndroidManifest.xml" />
+        </replaceregexp>
+        <antcall target="10zipalign"/>
+    </target>
     <!-- 1.Cleaning the project -->
+  <!--   <target
+        name="0buildnative">
+        <echo>Build_native...</echo>
+        <exec
+            executable="${basedir}/build_native.sh"
+            failonerror="true" >
+        </exec>
+    </target> -->
 
-    <target name="1clean" >
-
-        <echo>
-Cleaning the project...
-
-
-        </echo>
-
+    <target name="1clean">
+        <echo>Cleaning the project...</echo>
+ 		<echo>${externallib.abs}</echo>
         <delete
             includeemptydirs="true"
             verbose="true" >
@@ -200,9 +253,7 @@ Cleaning the project...
         depends="1clean" >
 
         <echo>
-Generating R.java / Manifest.java from the resources...
-
-
+Generating R.java / Manifest.java from the resources... ${aapt}
         </echo>
 
         <exec
@@ -233,14 +284,16 @@ Generating R.java / Manifest.java from the resources...
 
             <arg value="${libproject.abs.res}" />
 
-            <arg value="-S" />
+             <arg value="-S" />
 
             <arg value="${libproject2.abs.res}" />
 
             <arg value="--extra-packages" />
 
+            <!-- <arg value="${libproject.package.name}" /> -->
+
             <arg value="${libproject.package.name}:${libproject2.package.name}" />
-            <!-- Library Project的包名 -->
+            <!-- Library Project锟侥帮拷锟斤拷 -->
 
             <arg value="-I" />
 
@@ -280,7 +333,7 @@ Compiling aidl files into Java classes...
 
     <!--
      4Compile 
-     srcdir="${framework_src.abs}:${src.abs}:${gen.abs}" 表示编译的源文件目录有三个
+     srcdir="${framework_src.abs}:${src.abs}:${gen.abs}" 锟斤拷示锟斤拷锟斤拷锟皆达拷募锟侥柯硷拷锟斤拷锟斤拷
 
 
 
@@ -296,7 +349,7 @@ Compiling aidl files into Java classes...
             debug="off"
             extdirs=""
             includeantruntime="false"
-            srcdir="${src.abs}:${gen.abs}:${libproject.abs.src}:${libproject2.abs.src}"
+            srcdir="${src.abs}:${gen.abs}:${libproject.abs.src}:${libproject2.abs.src}:"
             destdir="${bin.abs}"
             bootclasspath="${android.core}" >
 
@@ -444,17 +497,21 @@ Packaging an unsigned APK file...
 
             <arg value="${src.abs}" />
 
-            <!-- 加jar库到应用包中 -->
+            <!-- 锟斤拷jar锟解到应锟矫帮拷锟斤拷 -->
 
             <arg value="-rj" />
 
             <arg value="${libproject.abs.lib}" />
 
-            <!-- 加动态连接库到应用包中 -->
+            <!-- 锟接讹拷态锟斤拷锟接库到应锟矫帮拷锟斤拷 -->
 
-            <arg value="-nf" />
+          <!--   <arg value="-nf" />
 
-            <arg value="${libproject.abs.lib}" />
+            <arg value="${libproject.abs.lib}" /> -->
+
+            <arg value="-nf"/>
+            <arg value="${externallib.abs}"/>
+
         </exec>
 
         <echo>
@@ -512,8 +569,7 @@ It will need to be signed with jarsigner before being published.
 
             <arg value="${signed.abs}" />
 
-            <arg value="${bin.abs}/${ant.project.name}-final.apk" />
+            <arg value="${release.abs}/${ant.project.name}-${channel}.apk" />
         </exec>
     </target>
-
 </project>
